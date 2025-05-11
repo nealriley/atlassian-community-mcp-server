@@ -1,1 +1,39 @@
+# Dependencies
 node_modules
+/package-lock.json
+/yarn.lock
+/pnpm-lock.yaml
+
+# Cloudflare Workers
+.wrangler
+/dist
+.dev.vars
+.env
+.env.local
+.dev.vars
+
+# Local development
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.history
+coverage
+/temp
+/tmp
+*.log
+
+# Testing
+/coverage
+/.nyc_output
+
+# Build outputs
+/worker
+/build
+/public/dist
+/public/build
+
+# Claude specific
+**/.claude/settings.local.json
+.claude/cache
