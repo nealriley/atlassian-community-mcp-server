@@ -4,18 +4,11 @@ import { z } from "zod";
 import {
 	searchByQuery,
 	searchByQueryAndTag,
-	searchQandAPosts,
-	searchBlogPosts,
 	getTopPostsByViewsForTag,
 	getMostRecentPosts,
-	getMostRecentQandAPosts,
-	getMostRecentBlogPosts,
 	getMostRecentPostsByTag,
-	getMostRecentQandAPostsByTag,
-	getMostRecentBlogPostsByTag,
 	getContentByUser,
 	getAnswersForPost,
-	getPopularTags,
 } from "./services";
 import { PaginationSchema, SortingSchema } from "./utils";
 
@@ -27,7 +20,7 @@ export class MyMCP extends McpAgent {
 	});
 
 	async init() {
-		// Search community posts by query
+		// 1. Search community posts by query (look for content in all tags)
 		this.server.tool(
 			"searchCommunity",
 			{
@@ -56,7 +49,7 @@ export class MyMCP extends McpAgent {
 			},
 		);
 
-		// Search community posts by query and tags
+		// 2. Search community posts by query and tags (look for content in specific tags)
 		this.server.tool(
 			"searchByTags",
 			{
@@ -92,7 +85,7 @@ export class MyMCP extends McpAgent {
 			},
 		);
 
-		// Get top posts by views for a tag
+		// 3. Get top posts by views for a tag (top posts by page views for a given tag)
 		this.server.tool(
 			"getTopPostsByViews",
 			{
@@ -120,7 +113,7 @@ export class MyMCP extends McpAgent {
 			},
 		);
 
-		// Get most recent posts
+		// 4. Get most recent posts (look for new posts across all tags)
 		this.server.tool(
 			"getMostRecentPosts",
 			{
@@ -147,7 +140,7 @@ export class MyMCP extends McpAgent {
 			},
 		);
 
-		// Get most recent posts for a tag
+		// 5. Get most recent posts for a tag (look for new post in one or more tags)
 		this.server.tool(
 			"getMostRecentPostsByTag",
 			{
@@ -175,7 +168,7 @@ export class MyMCP extends McpAgent {
 			},
 		);
 
-		// Get content by user
+		// 6. Get content by user (get details on users who post, including other posts they've made)
 		this.server.tool(
 			"getUserContent",
 			{
@@ -204,7 +197,7 @@ export class MyMCP extends McpAgent {
 			},
 		);
 
-		// Get answers for a post
+		// 7. Get answers for a post (get all comments with a parent post being a specific id)
 		this.server.tool(
 			"getPostAnswers",
 			{
@@ -258,174 +251,6 @@ export class MyMCP extends McpAgent {
 		// 		}
 		// 	},
 		// );
-
-		// Search Q&A posts only
-		this.server.tool(
-			"searchQandAPosts",
-			{
-				searchTerms: z.string().min(1),
-				...PaginationSchema,
-				...SortingSchema,
-			},
-			async ({ searchTerms, limit, offset, sortOrder }) => {
-				try {
-					const results = await searchQandAPosts(searchTerms, limit, offset, sortOrder);
-					return {
-						content: [{ type: "text", text: JSON.stringify(results) }],
-					};
-				} catch (error) {
-					return {
-						content: [
-							{
-								type: "text",
-								text: JSON.stringify({
-									error: error instanceof Error ? error.message : String(error),
-								}),
-							},
-						],
-					};
-				}
-			},
-		);
-
-		// Search blog posts only
-		this.server.tool(
-			"searchBlogPosts",
-			{
-				searchTerms: z.string().min(1),
-				...PaginationSchema,
-				...SortingSchema,
-			},
-			async ({ searchTerms, limit, offset, sortOrder }) => {
-				try {
-					const results = await searchBlogPosts(searchTerms, limit, offset, sortOrder);
-					return {
-						content: [{ type: "text", text: JSON.stringify(results) }],
-					};
-				} catch (error) {
-					return {
-						content: [
-							{
-								type: "text",
-								text: JSON.stringify({
-									error: error instanceof Error ? error.message : String(error),
-								}),
-							},
-						],
-					};
-				}
-			},
-		);
-
-		// Get most recent Q&A posts
-		this.server.tool(
-			"getMostRecentQandAPosts",
-			{
-				...PaginationSchema,
-			},
-			async ({ limit, offset }) => {
-				try {
-					const results = await getMostRecentQandAPosts(limit, offset);
-					return {
-						content: [{ type: "text", text: JSON.stringify(results) }],
-					};
-				} catch (error) {
-					return {
-						content: [
-							{
-								type: "text",
-								text: JSON.stringify({
-									error: error instanceof Error ? error.message : String(error),
-								}),
-							},
-						],
-					};
-				}
-			},
-		);
-
-		// Get most recent blog posts
-		this.server.tool(
-			"getMostRecentBlogPosts",
-			{
-				...PaginationSchema,
-			},
-			async ({ limit, offset }) => {
-				try {
-					const results = await getMostRecentBlogPosts(limit, offset);
-					return {
-						content: [{ type: "text", text: JSON.stringify(results) }],
-					};
-				} catch (error) {
-					return {
-						content: [
-							{
-								type: "text",
-								text: JSON.stringify({
-									error: error instanceof Error ? error.message : String(error),
-								}),
-							},
-						],
-					};
-				}
-			},
-		);
-
-		// Get most recent Q&A posts with a specific tag
-		this.server.tool(
-			"getMostRecentQandAPostsByTag",
-			{
-				tag: z.string().min(1),
-				...PaginationSchema,
-			},
-			async ({ tag, limit, offset }) => {
-				try {
-					const results = await getMostRecentQandAPostsByTag(tag, limit, offset);
-					return {
-						content: [{ type: "text", text: JSON.stringify(results) }],
-					};
-				} catch (error) {
-					return {
-						content: [
-							{
-								type: "text",
-								text: JSON.stringify({
-									error: error instanceof Error ? error.message : String(error),
-								}),
-							},
-						],
-					};
-				}
-			},
-		);
-
-		// Get most recent blog posts with a specific tag
-		this.server.tool(
-			"getMostRecentBlogPostsByTag",
-			{
-				tag: z.string().min(1),
-				...PaginationSchema,
-			},
-			async ({ tag, limit, offset }) => {
-				try {
-					const results = await getMostRecentBlogPostsByTag(tag, limit, offset);
-					return {
-						content: [{ type: "text", text: JSON.stringify(results) }],
-					};
-				} catch (error) {
-					return {
-						content: [
-							{
-								type: "text",
-								text: JSON.stringify({
-									error: error instanceof Error ? error.message : String(error),
-								}),
-							},
-						],
-					};
-				}
-			},
-		);
 	}
 }
 

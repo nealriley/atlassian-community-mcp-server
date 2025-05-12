@@ -192,23 +192,47 @@ export async function getTopPostsByViewsForTag(
 	Logger.logRequest("getTopPostsByViewsForTag", { tag, limit, offset });
 
 	try {
-		// Build the query
+		// Build the query - fetch more posts than needed so we can sort them later
+		// Adding a buffer of 3x the requested limit to ensure we have enough posts to sort
+		const fetchLimit = Math.min(limit * 3, 100); // Cap at 100 to avoid excessive data fetch
+
 		let query = "SELECT * FROM messages WHERE depth = 0";
 
 		// Add tag filter
 		query += ` AND tags.text = '${tag}'`;
 
-		// Order by view count
-		query += " ORDER BY view_count DESC";
+		// Order by post time to get recent posts (since we can't directly sort by views)
+		query += " ORDER BY post_time DESC";
 
-		// Add limit and offset
-		query += ` LIMIT ${limit} OFFSET ${offset}`;
+		// Fetch more posts than needed so we can sort by views in code
+		query += ` LIMIT ${fetchLimit} OFFSET ${offset}`;
 
 		// Execute the query
 		const data = await executeApiRequest(query, "getTopPostsByViewsForTag");
 
 		// Format the results
 		const formattedData = formatSearchResults(data);
+
+		// Sort the items by view count (if view_count exists in the data)
+		if (formattedData.items && formattedData.items.length > 0) {
+			formattedData.items.sort((a: any, b: any) => {
+				// Default to 0 if view_count doesn't exist
+				const viewsA = a.viewCount || a.view_count || 0;
+				const viewsB = b.viewCount || b.view_count || 0;
+				return viewsB - viewsA; // Sort descending
+			});
+
+			// Slice the array to get only the requested number of items
+			formattedData.items = formattedData.items.slice(0, limit);
+
+			// Update pagination info
+			if (formattedData.pagination) {
+				formattedData.pagination.showing = formattedData.items.length;
+			}
+
+			// Update message
+			formattedData.message = `Found ${formattedData.items.length} total results. Showing ${formattedData.items.length} results starting from ${offset}.`;
+		}
 
 		Logger.logResponse("getTopPostsByViewsForTag", true, formattedData);
 		return formattedData;
