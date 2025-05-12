@@ -1,203 +1,149 @@
 # Atlassian Community MCP Server
 
-This is a Model Context Protocol (MCP) server that provides tools for interacting with the Atlassian Community API. It allows AI assistants to search for community posts, discover topics by tags, and find related content.
+A search service for the Atlassian Community built using the Model Context Protocol (MCP). This project enables AI assistants and other applications to search, retrieve, and analyze content from the Atlassian Community forums.
 
-## Getting Started
+## Project Overview
 
-### Deploy to Cloudflare Workers
+The Atlassian Community MCP server provides endpoints for searching community posts, filtering by tags, retrieving trending content, and accessing user contributions. It's designed to be used by AI agents, integrations, and tools that need to access Atlassian Community content programmatically.
 
-[![Deploy to Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/yourusername/atlassian-community-mcp-server)
+## Local Development
 
-This will deploy your MCP server to a URL like: `atlassian-community-mcp-server.<your-account>.workers.dev/sse`
+To set up and run this project locally for development:
 
-### Local Development
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/atlassian-community-mcp-server.git
+   cd atlassian-community-mcp-server
+   ```
 
-1. Clone this repository
-2. Install dependencies: `npm install`
-3. Start the development server: `npm run dev`
-4. Your MCP server will be available at: `http://localhost:8787/sse`
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-## Available Tools
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-### General Search Tools
+4. Your MCP server will be available at: `http://localhost:8787/mcp`
+   (The SSE endpoint will be at: `http://localhost:8787/sse`)
 
-#### searchCommunity
+5. For health check, visit: `http://localhost:8787/health`
 
-Search for all content (both Q&A posts and articles) using query terms in both subject and body.
+## Adding Tests
 
-Parameters:
-- `searchTerms` (string, required): Terms to search for
-- `limit` (number, optional, default: 25): Maximum number of results to return
-- `offset` (number, optional, default: 0): Number of results to skip (for pagination)
-- `sortOrder` (string, optional, default: "desc"): Sort order by post date ("asc" or "desc")
+This project uses Jest for testing. To add and run tests:
 
-#### searchByTags
+1. Create test files with the `.test.ts` extension in the same directory as the file you're testing
 
-Search for posts using a combination of query terms and tags.
+2. Write your tests using the Jest testing framework. Example:
+   ```typescript
+   // services.test.ts
+   import { searchByQuery } from './services';
+   
+   describe('searchByQuery', () => {
+     test('should return search results', async () => {
+       const results = await searchByQuery('test', 5, 0, 'desc');
+       expect(results).toHaveProperty('success');
+       expect(results).toHaveProperty('items');
+     });
+   });
+   ```
 
-Parameters:
-- `searchTerms` (string, optional): Terms to search for
-- `tags` (array of strings, required): Tags to filter by
-- `limit` (number, optional, default: 25): Maximum number of results to return
-- `offset` (number, optional, default: 0): Number of results to skip (for pagination)
-- `sortOrder` (string, optional, default: "desc"): Sort order by post date ("asc" or "desc")
+3. Run all tests:
+   ```bash
+   npm test
+   ```
 
-### Content Type Specific Search
+4. Run a specific test file:
+   ```bash
+   npm test -- services.test.ts
+   ```
 
-#### searchQandAPosts
+5. For faster testing during development, you can also use the test-functions script:
+   ```bash
+   npx tsx src/test-functions.ts
+   ```
 
-Search for only Q&A type posts (questions) using query terms.
+## Feature Requests and Bug Reports
 
-Parameters:
-- `searchTerms` (string, required): Terms to search for
-- `limit` (number, optional, default: 25): Maximum number of results to return
-- `offset` (number, optional, default: 0): Number of results to skip (for pagination)
-- `sortOrder` (string, optional, default: "desc"): Sort order by post date ("asc" or "desc")
+We use GitHub issues to track feature requests and bug reports. To open a new issue:
 
-#### searchBlogPosts
+1. Go to the [GitHub Issues](https://github.com/yourusername/atlassian-community-mcp-server/issues) page
 
-Search for only blog type content using query terms.
+2. Click on "New Issue"
 
-Parameters:
-- `searchTerms` (string, required): Terms to search for
-- `limit` (number, optional, default: 25): Maximum number of results to return
-- `offset` (number, optional, default: 0): Number of results to skip (for pagination)
-- `sortOrder` (string, optional, default: "desc"): Sort order by post date ("asc" or "desc")
+3. Choose the appropriate template (Feature Request or Bug Report)
 
-### Recent Content Tools
+4. Fill out the required information:
+   - For feature requests: describe the desired functionality, why it's needed, and any implementation ideas
+   - For bug reports: provide steps to reproduce, expected behavior, actual behavior, and environment details
 
-#### getMostRecentPosts
+5. Submit the issue
 
-Get the most recent posts (both Q&A and articles) across all topics.
+## Submitting Pull Requests
 
-Parameters:
-- `limit` (number, optional, default: 25): Maximum number of results to return
-- `offset` (number, optional, default: 0): Number of results to skip (for pagination)
+We welcome contributions! To submit a pull request:
 
-#### getMostRecentQandAPosts
+1. Fork the repository
 
-Get the most recent Q&A posts only.
+2. Create a new branch for your feature or fix:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+   or
+   ```bash
+   git checkout -b fix/issue-you-are-fixing
+   ```
 
-Parameters:
-- `limit` (number, optional, default: 25): Maximum number of results to return
-- `offset` (number, optional, default: 0): Number of results to skip (for pagination)
+3. Make your changes and commit them with descriptive commit messages:
+   ```bash
+   git commit -m "Add new feature: detailed description"
+   ```
 
-#### getMostRecentBlogPosts
+4. Push your branch to your fork:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
 
-Get the most recent blog content only.
+5. Open a pull request:
+   - Go to the original repository
+   - Click "Pull Requests" and then "New Pull Request"
+   - Choose "compare across forks"
+   - Select your fork and branch
+   - Fill out the PR template with a description of your changes
+   - Reference any related issues using the "Fixes #issue-number" syntax
 
-Parameters:
-- `limit` (number, optional, default: 25): Maximum number of results to return
-- `offset` (number, optional, default: 0): Number of results to skip (for pagination)
+6. Wait for code review
 
-### Tag-based Content Tools
+7. Address any feedback and update your PR as needed
 
-#### getMostRecentPostsByTag
+## Development Guidelines
 
-Get the most recent posts (both Q&A and articles) for a specific tag.
+1. Follow the TypeScript coding style used throughout the project
 
-Parameters:
-- `tag` (string, required): Tag to filter by
-- `limit` (number, optional, default: 25): Maximum number of results to return
-- `offset` (number, optional, default: 0): Number of results to skip (for pagination)
+2. Add comments for complex logic
 
-#### getMostRecentQandAPostsByTag
+3. Write tests for new features
 
-Get the most recent Q&A posts for a specific tag.
+4. Update documentation when adding or changing features
 
-Parameters:
-- `tag` (string, required): Tag to filter by
-- `limit` (number, optional, default: 25): Maximum number of results to return
-- `offset` (number, optional, default: 0): Number of results to skip (for pagination)
+## Project Structure
 
-#### getMostRecentBlogPostsByTag
-
-Get the most recent blog posts for a specific tag.
-
-Parameters:
-- `tag` (string, required): Tag to filter by
-- `limit` (number, optional, default: 25): Maximum number of results to return
-- `offset` (number, optional, default: 0): Number of results to skip (for pagination)
-
-#### getTopPostsByViews
-
-Get the most viewed posts for a specific tag.
-
-Parameters:
-- `tag` (string, required): Tag to filter by
-- `limit` (number, optional, default: 25): Maximum number of results to return
-- `offset` (number, optional, default: 0): Number of results to skip (for pagination)
-
-### User & Answer Tools
-
-#### getUserContent
-
-Get posts or answers created by a specific user.
-
-Parameters:
-- `username` (string, required): Username to filter by
-- `includeAnswers` (boolean, optional, default: false): Whether to include answers (depth > 0)
-- `limit` (number, optional, default: 25): Maximum number of results to return
-- `offset` (number, optional, default: 0): Number of results to skip (for pagination)
-
-#### getPostAnswers
-
-Get all answers for a specific post.
-
-Parameters:
-- `postId` (string, required): ID of the post to get answers for
-- `limit` (number, optional, default: 25): Maximum number of results to return
-- `offset` (number, optional, default: 0): Number of results to skip (for pagination)
-
-### Tag Discovery
-
-*Note: The getPopularTags tool is temporarily unavailable due to API limitations.*
-
-<!--
-#### getPopularTags
-
-Get the most popular tags on the community.
-
-Parameters:
-- `limit` (number, optional, default: 20): Maximum number of tags to return
--->
-
-## Response Format
-
-All tools return responses in the following JSON format:
-
-```json
-{
-  "success": true,
-  "message": "Found X total results. Showing Y results starting from Z.",
-  "items": [
-    {
-      "id": "post-123",
-      "title": "Post Title",
-      "author": "username",
-      "postDate": "2025-04-01, 12:00:00 PM",
-      "tags": "tag1, tag2, tag3",
-      "viewCount": 100,
-      "replyCount": 5,
-      "hasAcceptedSolution": true,
-      "contentType": "qanda",
-      "isQandA": true,
-      "isBlog": false,
-      "url": "https://community.atlassian.com/t5/forum-name/post-title/td-p/post-123",
-      "communityLink": "https://community.atlassian.com/t5/forum-name/post-title/td-p/post-123",
-      "excerpt": "This is a snippet of the post content..."
-    }
-  ],
-  "pagination": {
-    "total": 100,
-    "showing": 25,
-    "startIndex": 0,
-    "currentPage": 1,
-    "totalPages": 4
-  },
-  "tip": "Each result includes a 'communityLink' field with a direct URL to the post on the Atlassian Community site."
-}
 ```
+├── src/                    # Source files
+│   ├── index.ts           # Main entry point, MCP server setup and endpoint definitions
+│   ├── services.ts        # Core service functions that interact with the Atlassian Community API
+│   ├── utils.ts           # Utility functions for API requests, formatting, logging
+│   └── test-functions.ts  # Script to test service functions directly
+├── tests/                 # Test files
+└── jest.config.js         # Jest configuration
+```
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 <!-- Temporarily removed as getPopularTags is unavailable
 For the `getPopularTags` tool, the response format is slightly different:
