@@ -12,8 +12,10 @@ export async function searchByQuery(
         limit = 25,
         offset = 0,
         sortOrder: "asc" | "desc" = "desc",
+        answered?: "answered" | "unanswered",
+        acceptedOnly = false,
 ) {
-        Logger.logRequest("searchByQuery", { searchTerms, limit, offset, sortOrder });
+        Logger.logRequest("searchByQuery", { searchTerms, limit, offset, sortOrder, answered, acceptedOnly });
 
         try {
                 // Build the query
@@ -23,8 +25,20 @@ export async function searchByQuery(
                 const sanitizedSearchTerms = searchTerms.replace(/'/g, "''");
                 query += ` AND (subject MATCHES '${sanitizedSearchTerms}' OR body MATCHES '${sanitizedSearchTerms}')`;
 
-		// Add sorting
-		query += ` ORDER BY post_time ${sortOrder}`;
+                // Add answered/unanswered filter
+                if (answered === "answered") {
+                        query += " AND reply_count > 0";
+                } else if (answered === "unanswered") {
+                        query += " AND reply_count = 0";
+                }
+
+                // Filter for posts with accepted answers only
+                if (acceptedOnly) {
+                        query += " AND accepted_solution_id IS NOT NULL";
+                }
+
+                // Add sorting
+                query += ` ORDER BY post_time ${sortOrder}`;
 
 		// Add limit and offset
 		query += ` LIMIT ${limit} OFFSET ${offset}`;
@@ -145,8 +159,18 @@ export async function searchByQueryAndTag(
         limit = 25,
         offset = 0,
         sortOrder: "asc" | "desc" = "desc",
+        answered?: "answered" | "unanswered",
+        acceptedOnly = false,
 ) {
-	Logger.logRequest("searchByQueryAndTag", { searchTerms, tags, limit, offset, sortOrder });
+        Logger.logRequest("searchByQueryAndTag", {
+                searchTerms,
+                tags,
+                limit,
+                offset,
+                sortOrder,
+                answered,
+                acceptedOnly,
+        });
 
 	try {
                 // Build the query
@@ -162,6 +186,17 @@ export async function searchByQueryAndTag(
                                 .map((tag) => `'${tag.replace(/'/g, "''")}'`)
                                 .join(", ");
                         query += ` AND tags.text IN (${tagsList})`;
+                }
+
+                // Add answered/unanswered filter
+                if (answered === "answered") {
+                        query += " AND reply_count > 0";
+                } else if (answered === "unanswered") {
+                        query += " AND reply_count = 0";
+                }
+
+                if (acceptedOnly) {
+                        query += " AND accepted_solution_id IS NOT NULL";
                 }
 
 		// Add sorting

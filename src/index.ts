@@ -22,15 +22,24 @@ export class MyMCP extends McpAgent {
 	async init() {
 		// 1. Search community posts by query (look for content in all tags)
 		this.server.tool(
-			"searchCommunity",
-			{
-				searchTerms: z.string().min(1),
-				...PaginationSchema,
-				...SortingSchema,
-			},
-			async ({ searchTerms, limit, offset, sortOrder }) => {
-				try {
-					const results = await searchByQuery(searchTerms, limit, offset, sortOrder);
+                        "searchCommunity",
+                        {
+                                searchTerms: z.string().min(1),
+                                answered: z.enum(["answered", "unanswered"]).optional(),
+                                acceptedOnly: z.boolean().optional().default(false),
+                                ...PaginationSchema,
+                                ...SortingSchema,
+                        },
+                        async ({ searchTerms, answered, acceptedOnly, limit, offset, sortOrder }) => {
+                                try {
+                                        const results = await searchByQuery(
+                                                searchTerms,
+                                                limit,
+                                                offset,
+                                                sortOrder,
+                                                answered,
+                                                acceptedOnly,
+                                        );
 					return {
 						content: [{ type: "text", text: JSON.stringify(results) }],
 					};
@@ -51,22 +60,26 @@ export class MyMCP extends McpAgent {
 
 		// 2. Search community posts by query and tags (look for content in specific tags)
 		this.server.tool(
-			"searchByTags",
-			{
-				searchTerms: z.string().optional(),
-				tags: z.array(z.string()).min(1),
-				...PaginationSchema,
-				...SortingSchema,
-			},
-			async ({ searchTerms, tags, limit, offset, sortOrder }) => {
-				try {
-					const results = await searchByQueryAndTag(
-						searchTerms || "",
-						tags,
-						limit,
-						offset,
-						sortOrder,
-					);
+                        "searchByTags",
+                        {
+                                searchTerms: z.string().optional(),
+                                tags: z.array(z.string()).min(1),
+                                answered: z.enum(["answered", "unanswered"]).optional(),
+                                acceptedOnly: z.boolean().optional().default(false),
+                                ...PaginationSchema,
+                                ...SortingSchema,
+                        },
+                        async ({ searchTerms, tags, answered, acceptedOnly, limit, offset, sortOrder }) => {
+                                try {
+                                        const results = await searchByQueryAndTag(
+                                                searchTerms || "",
+                                                tags,
+                                                limit,
+                                                offset,
+                                                sortOrder,
+                                                answered,
+                                                acceptedOnly,
+                                        );
 					return {
 						content: [{ type: "text", text: JSON.stringify(results) }],
 					};
