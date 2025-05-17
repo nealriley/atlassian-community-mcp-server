@@ -8,19 +8,20 @@ import { executeApiRequest, formatSearchResults, formatTagsResults, Logger } fro
  * @param sortOrder Sorting order by post date (asc or desc)
  */
 export async function searchByQuery(
-	searchTerms: string,
-	limit = 25,
-	offset = 0,
-	sortOrder: "asc" | "desc" = "desc",
+        searchTerms: string,
+        limit = 25,
+        offset = 0,
+        sortOrder: "asc" | "desc" = "desc",
 ) {
-	Logger.logRequest("searchByQuery", { searchTerms, limit, offset, sortOrder });
+        Logger.logRequest("searchByQuery", { searchTerms, limit, offset, sortOrder });
 
-	try {
-		// Build the query
-		let query = "SELECT * FROM messages WHERE depth = 0";
+        try {
+                // Build the query
+                let query = "SELECT * FROM messages WHERE depth = 0";
 
-		// Add search terms
-		query += ` AND (subject MATCHES '${searchTerms}' OR body MATCHES '${searchTerms}')`;
+                // Add search terms
+                const sanitizedSearchTerms = searchTerms.replace(/'/g, "''");
+                query += ` AND (subject MATCHES '${sanitizedSearchTerms}' OR body MATCHES '${sanitizedSearchTerms}')`;
 
 		// Add sorting
 		query += ` ORDER BY post_time ${sortOrder}`;
@@ -50,10 +51,10 @@ export async function searchByQuery(
  * @param sortOrder Sorting order by post date (asc or desc)
  */
 export async function searchQandAPosts(
-	searchTerms: string,
-	limit = 25,
-	offset = 0,
-	sortOrder: "asc" | "desc" = "desc",
+        searchTerms: string,
+        limit = 25,
+        offset = 0,
+        sortOrder: "asc" | "desc" = "desc",
 ) {
 	Logger.logRequest("searchQandAPosts", { searchTerms, limit, offset, sortOrder });
 
@@ -62,8 +63,9 @@ export async function searchQandAPosts(
 		// Filter for Q&A posts by specifying conversation.style = 'qanda'
 		let query = "SELECT * FROM messages WHERE depth = 0 AND conversation.style = 'qanda'";
 
-		// Add search terms
-		query += ` AND (subject MATCHES '${searchTerms}' OR body MATCHES '${searchTerms}')`;
+                // Add search terms
+                const sanitizedSearchTerms = searchTerms.replace(/'/g, "''");
+                query += ` AND (subject MATCHES '${sanitizedSearchTerms}' OR body MATCHES '${sanitizedSearchTerms}')`;
 
 		// Add sorting
 		query += ` ORDER BY post_time ${sortOrder}`;
@@ -93,10 +95,10 @@ export async function searchQandAPosts(
  * @param sortOrder Sorting order by post date (asc or desc)
  */
 export async function searchBlogPosts(
-	searchTerms: string,
-	limit = 25,
-	offset = 0,
-	sortOrder: "asc" | "desc" = "desc",
+        searchTerms: string,
+        limit = 25,
+        offset = 0,
+        sortOrder: "asc" | "desc" = "desc",
 ) {
 	Logger.logRequest("searchBlogPosts", { searchTerms, limit, offset, sortOrder });
 
@@ -105,8 +107,9 @@ export async function searchBlogPosts(
 		// Filter for blog posts by specifying conversation.style = 'blog'
 		let query = "SELECT * FROM messages WHERE depth = 0 AND conversation.style = 'blog'";
 
-		// Add search terms
-		query += ` AND (subject MATCHES '${searchTerms}' OR body MATCHES '${searchTerms}')`;
+                // Add search terms
+                const sanitizedSearchTerms = searchTerms.replace(/'/g, "''");
+                query += ` AND (subject MATCHES '${sanitizedSearchTerms}' OR body MATCHES '${sanitizedSearchTerms}')`;
 
 		// Add sorting
 		query += ` ORDER BY post_time ${sortOrder}`;
@@ -137,26 +140,29 @@ export async function searchBlogPosts(
  * @param sortOrder Sorting order by post date (asc or desc)
  */
 export async function searchByQueryAndTag(
-	searchTerms: string,
-	tags: string[],
-	limit = 25,
-	offset = 0,
-	sortOrder: "asc" | "desc" = "desc",
+        searchTerms: string,
+        tags: string[],
+        limit = 25,
+        offset = 0,
+        sortOrder: "asc" | "desc" = "desc",
 ) {
 	Logger.logRequest("searchByQueryAndTag", { searchTerms, tags, limit, offset, sortOrder });
 
 	try {
-		// Build the query
-		let query = "SELECT * FROM messages WHERE depth = 0";
+                // Build the query
+                let query = "SELECT * FROM messages WHERE depth = 0";
 
-		// Add search terms
-		query += ` AND (subject MATCHES '${searchTerms}' OR body MATCHES '${searchTerms}')`;
+                // Add search terms
+                const sanitizedSearchTerms = searchTerms.replace(/'/g, "''");
+                query += ` AND (subject MATCHES '${sanitizedSearchTerms}' OR body MATCHES '${sanitizedSearchTerms}')`;
 
-		// Add tags filter
-		if (tags && tags.length > 0) {
-			const tagsList = tags.map((tag) => `'${tag}'`).join(", ");
-			query += ` AND tags.text IN (${tagsList})`;
-		}
+                // Add tags filter
+                if (tags && tags.length > 0) {
+                        const tagsList = tags
+                                .map((tag) => `'${tag.replace(/'/g, "''")}'`)
+                                .join(", ");
+                        query += ` AND tags.text IN (${tagsList})`;
+                }
 
 		// Add sorting
 		query += ` ORDER BY post_time ${sortOrder}`;
