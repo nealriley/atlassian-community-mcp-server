@@ -92,14 +92,33 @@ describe("AtlassianCommunityServices", () => {
 		);
 	});
 
-	test("getTopPostsByViewsForTag should build the correct query", async () => {
-		await getTopPostsByViewsForTag("jira", 15, 10);
+        test("getTopPostsByViewsForTag should build the correct query", async () => {
+                const unsortedResponse = {
+                        data: {
+                                items: [
+                                        { id: "a", viewCount: 50, postTime: "2025-04-01T12:00:00Z" },
+                                        { id: "b", viewCount: 200, postTime: "2025-04-02T12:00:00Z" },
+                                        { id: "c", viewCount: 100, postTime: "2025-04-03T12:00:00Z" },
+                                ],
+                                size: 25,
+                                startIndex: 0,
+                                totalSize: 3,
+                        },
+                };
 
-		expect(executeApiRequest).toHaveBeenCalledWith(
-			"SELECT * FROM messages WHERE depth = 0 AND tags.text = 'jira' ORDER BY view_count DESC LIMIT 15 OFFSET 10",
-			"getTopPostsByViewsForTag",
-		);
-	});
+                (executeApiRequest as jest.Mock).mockResolvedValueOnce(unsortedResponse);
+
+                const result = await getTopPostsByViewsForTag("jira", 15, 10);
+
+                const fetchLimit = Math.min(15 * 3, 100);
+
+                expect(executeApiRequest).toHaveBeenCalledWith(
+                        `SELECT * FROM messages WHERE depth = 0 AND tags.text = 'jira' ORDER BY post_time DESC LIMIT ${fetchLimit} OFFSET 10`,
+                        "getTopPostsByViewsForTag",
+                );
+
+                expect(result.items.map((i) => i.viewCount)).toEqual([200, 100, 50]);
+        });
 
 	test("getMostRecentPosts should build the correct query", async () => {
 		await getMostRecentPosts(20, 0);
