@@ -132,12 +132,12 @@ We welcome contributions! To submit a pull request:
 ## Project Structure
 
 ```
-├── src/                    # Source files
+├── src/                    # Source files and Jest tests
 │   ├── index.ts           # Main entry point, MCP server setup and endpoint definitions
 │   ├── services.ts        # Core service functions that interact with the Atlassian Community API
+│   ├── services.test.ts   # Tests for service functions
 │   ├── utils.ts           # Utility functions for API requests, formatting, logging
 │   └── test-functions.ts  # Script to test service functions directly
-├── tests/                 # Test files
 └── jest.config.js         # Jest configuration
 ```
 
