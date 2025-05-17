@@ -219,12 +219,48 @@ describe("AtlassianCommunityServices", () => {
 		);
 	});
 
-	test("getMostRecentBlogPostsByTag should build the correct query", async () => {
-		await getMostRecentBlogPostsByTag("confluence", 10, 0);
+        test("getMostRecentBlogPostsByTag should build the correct query", async () => {
+                await getMostRecentBlogPostsByTag("confluence", 10, 0);
 
-		expect(executeApiRequest).toHaveBeenCalledWith(
-			"SELECT * FROM messages WHERE depth = 0 AND conversation.style = 'blog' AND tags.text = 'confluence' ORDER BY post_time DESC LIMIT 10 OFFSET 0",
-			"getMostRecentBlogPostsByTag",
-		);
-	});
+                expect(executeApiRequest).toHaveBeenCalledWith(
+                        "SELECT * FROM messages WHERE depth = 0 AND conversation.style = 'blog' AND tags.text = 'confluence' ORDER BY post_time DESC LIMIT 10 OFFSET 0",
+                        "getMostRecentBlogPostsByTag",
+                );
+        });
+
+        test("searchByQuery escapes single quotes in search terms", async () => {
+                await searchByQuery("bob's bug", 10, 0, "desc");
+
+                expect(executeApiRequest).toHaveBeenCalledWith(
+                        "SELECT * FROM messages WHERE depth = 0 AND (subject MATCHES 'bob''s bug' OR body MATCHES 'bob''s bug') ORDER BY post_time desc LIMIT 10 OFFSET 0",
+                        "searchByQuery",
+                );
+        });
+
+        test("searchQandAPosts escapes single quotes in search terms", async () => {
+                await searchQandAPosts("can't start", 5, 0, "asc");
+
+                expect(executeApiRequest).toHaveBeenCalledWith(
+                        "SELECT * FROM messages WHERE depth = 0 AND conversation.style = 'qanda' AND (subject MATCHES 'can''t start' OR body MATCHES 'can''t start') ORDER BY post_time asc LIMIT 5 OFFSET 0",
+                        "searchQandAPosts",
+                );
+        });
+
+        test("searchBlogPosts escapes single quotes in search terms", async () => {
+                await searchBlogPosts("atlassian's update", 7, 1, "desc");
+
+                expect(executeApiRequest).toHaveBeenCalledWith(
+                        "SELECT * FROM messages WHERE depth = 0 AND conversation.style = 'blog' AND (subject MATCHES 'atlassian''s update' OR body MATCHES 'atlassian''s update') ORDER BY post_time desc LIMIT 7 OFFSET 1",
+                        "searchBlogPosts",
+                );
+        });
+
+        test("searchByQueryAndTag escapes single quotes in terms and tags", async () => {
+                await searchByQueryAndTag("bob's bug", ["jira", "o'neil"], 3, 2, "asc");
+
+                expect(executeApiRequest).toHaveBeenCalledWith(
+                        "SELECT * FROM messages WHERE depth = 0 AND (subject MATCHES 'bob''s bug' OR body MATCHES 'bob''s bug') AND tags.text IN ('jira', 'o''neil') ORDER BY post_time asc LIMIT 3 OFFSET 2",
+                        "searchByQueryAndTag",
+                );
+        });
 });
