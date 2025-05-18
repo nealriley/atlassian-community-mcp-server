@@ -92,9 +92,10 @@ export function formatPost(post: any) {
 	const hasAcceptedSolution = post.acceptedSolutionId ? true : false;
 
 	// Determine content type (blog or q&a)
-	const contentType = post.conversation?.style || "unknown";
-	const isBlog = contentType === "blog";
-	const isQandA = contentType === "qanda";
+        const contentType = post.conversation?.style || "unknown";
+        const isBlog = contentType === "blog";
+        const isQandA = contentType === "qanda";
+        const isArticle = contentType === "article";
 
 	// Construct a more user-friendly URL
 	// Format: https://community.atlassian.com/t5/[board-id]/[post-title]/td-p/[post-id]
@@ -118,9 +119,10 @@ export function formatPost(post: any) {
 		viewCount,
 		replyCount,
 		hasAcceptedSolution,
-		contentType,
-		isBlog,
-		isQandA,
+                contentType,
+                isBlog,
+                isQandA,
+                isArticle,
 		url,
 		communityLink: url, // Add a more explicit property for the link
 		excerpt,

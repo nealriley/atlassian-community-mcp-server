@@ -74,8 +74,8 @@ describe("AtlassianCommunityServices", () => {
 		expect(result.tip).toContain("communityLink");
 	});
 
-	test("searchByQuery should build the correct query", async () => {
-		await searchByQuery("test query", 10, 5, "asc");
+        test("searchByQuery should build the correct query", async () => {
+                await searchByQuery("test query", 10, 5, "asc");
 
 		expect(executeApiRequest).toHaveBeenCalledWith(
 			"SELECT * FROM messages WHERE depth = 0 AND (subject MATCHES 'test query' OR body MATCHES 'test query') ORDER BY post_time asc LIMIT 10 OFFSET 5",
@@ -83,8 +83,8 @@ describe("AtlassianCommunityServices", () => {
 		);
 	});
 
-	test("searchByQueryAndTag should build the correct query with tags", async () => {
-		await searchByQueryAndTag("test query", ["jira", "confluence"], 10, 5, "desc");
+        test("searchByQueryAndTag should build the correct query with tags", async () => {
+                await searchByQueryAndTag("test query", ["jira", "confluence"], 10, 5, "desc");
 
 		expect(executeApiRequest).toHaveBeenCalledWith(
 			"SELECT * FROM messages WHERE depth = 0 AND (subject MATCHES 'test query' OR body MATCHES 'test query') AND tags.text IN ('jira', 'confluence') ORDER BY post_time desc LIMIT 10 OFFSET 5",
@@ -118,6 +118,33 @@ describe("AtlassianCommunityServices", () => {
                 );
 
                 expect(result.items.map((i) => i.viewCount)).toEqual([200, 100, 50]);
+        });
+
+        test("searchByQuery filters answered posts", async () => {
+                await searchByQuery("test query", 10, 0, "desc", "answered", false);
+
+                expect(executeApiRequest).toHaveBeenCalledWith(
+                        "SELECT * FROM messages WHERE depth = 0 AND (subject MATCHES 'test query' OR body MATCHES 'test query') AND reply_count > 0 ORDER BY post_time desc LIMIT 10 OFFSET 0",
+                        "searchByQuery",
+                );
+        });
+
+        test("searchByQueryAndTag filters unanswered posts", async () => {
+                await searchByQueryAndTag("test query", ["jira"], 5, 0, "desc", "unanswered", false);
+
+                expect(executeApiRequest).toHaveBeenCalledWith(
+                        "SELECT * FROM messages WHERE depth = 0 AND (subject MATCHES 'test query' OR body MATCHES 'test query') AND tags.text IN ('jira') AND reply_count = 0 ORDER BY post_time desc LIMIT 5 OFFSET 0",
+                        "searchByQueryAndTag",
+                );
+        });
+
+        test("searchByQuery filters accepted answers", async () => {
+                await searchByQuery("test query", 5, 0, "desc", undefined, true);
+
+                expect(executeApiRequest).toHaveBeenCalledWith(
+                        "SELECT * FROM messages WHERE depth = 0 AND (subject MATCHES 'test query' OR body MATCHES 'test query') AND accepted_solution_id IS NOT NULL ORDER BY post_time desc LIMIT 5 OFFSET 0",
+                        "searchByQuery",
+                );
         });
 
 	test("getMostRecentPosts should build the correct query", async () => {
